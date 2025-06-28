@@ -206,7 +206,7 @@ class AltSEO_AI_Plus_Public {
 	 *
 	 * @param    array   $attr        The image attributes.
 	 * @param    WP_Post $attachment  The attachment post.
-	 * @param    string  $size        The image size.
+	 * @param    string  $size        The image size (unused, required by WordPress filter).
 	 * @return   array                  The filtered attributes.
 	 * @since    1.0.0
 	 */

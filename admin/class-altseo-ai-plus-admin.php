@@ -1010,8 +1010,8 @@ class AltSEO_AI_Plus_Admin {
 				}
 			} catch ( Exception $e ) {
 				// Log the error but continue.
-				// Using wp_debug_log is safer than error_log according to WordPress standards.
 				if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+					// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 					error_log( 'AltSEO AI+: Error generating alt text for image ID ' . $image_id . ': ' . $e->getMessage() );
 				}
 			}

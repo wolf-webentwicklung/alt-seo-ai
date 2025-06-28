@@ -124,11 +124,11 @@ class AltSEO_AI_Plus_API {
 	 *
 	 * @param array        $attr       Attributes for the image markup.
 	 * @param WP_Post      $attachment Image attachment post.
-	 * @param string|array $size  Requested size.
+	 * @param string|array $size  Requested size (unused, required by WordPress filter).
 	 * @return array Modified attributes
 	 * @since 1.0.0
 	 */
-	public function elementor_image_attributes( $attr, $attachment, $size ) {
+	public function elementor_image_attributes( $attr, $attachment, $size ) { // @codingStandardsIgnoreLine
 		// The $size parameter is not used but required by the WordPress filter.
 		// Only process if Elementor is active and we're on frontend.
 		if ( ! $this->is_elementor_active() || is_admin() ) {
@@ -308,11 +308,11 @@ class AltSEO_AI_Plus_API {
 	 * Filter to determine if Elementor widget should render
 	 *
 	 * @param bool                   $should_render Whether to render the widget.
-	 * @param \Elementor\Widget_Base $widget Widget instance.
+	 * @param \Elementor\Widget_Base $widget Widget instance (unused, required by Elementor hook).
 	 * @return bool Whether to render
 	 * @since 1.0.0
 	 */
-	public function elementor_should_render_widget( $should_render, $widget ) {
+	public function elementor_should_render_widget( $should_render, $widget ) { // @codingStandardsIgnoreLine
 		// The $widget parameter is not used but required by the Elementor hook.
 		// Always allow rendering, we just want to hook into the process.
 		return $should_render;
@@ -392,11 +392,11 @@ class AltSEO_AI_Plus_API {
 	 * Filter Divi image source and attributes
 	 *
 	 * @param string $src Image source.
-	 * @param array  $args Image arguments.
+	 * @param array  $args Image arguments (unused, required by Divi filter).
 	 * @return string Modified source
 	 * @since 1.0.0
 	 */
-	public function divi_image_src_filter( $src, $args ) {
+	public function divi_image_src_filter( $src, $args ) { // @codingStandardsIgnoreLine
 		// The $args parameter is not used but required by the Divi filter.
 		// This is mainly for tracking - the actual alt text injection happens in other filters.
 		return $src;
@@ -407,11 +407,11 @@ class AltSEO_AI_Plus_API {
 	 *
 	 * @param string $content Module content.
 	 * @param string $function_name Module function name.
-	 * @param array  $props Module properties.
+	 * @param array  $props Module properties (unused, required by Divi filter).
 	 * @return string Modified content
 	 * @since 1.0.0
 	 */
-	public function divi_module_content_filter( $content, $function_name, $props ) {
+	public function divi_module_content_filter( $content, $function_name, $props ) { // @codingStandardsIgnoreLine
 		// The $props parameter is not used but required by the Divi filter.
 		// Only process if Divi is active and we're dealing with image modules.
 		if ( ! $this->is_divi_active() || is_admin() ) {
@@ -435,11 +435,11 @@ class AltSEO_AI_Plus_API {
 	 *
 	 * @param array        $attr       Attributes for the image markup.
 	 * @param WP_Post      $attachment Image attachment post.
-	 * @param string|array $size  Requested size.
+	 * @param string|array $size  Requested size (unused, required by WordPress filter).
 	 * @return array Modified attributes
 	 * @since 1.0.0
 	 */
-	public function divi_image_attributes( $attr, $attachment, $size ) {
+	public function divi_image_attributes( $attr, $attachment, $size ) { // @codingStandardsIgnoreLine
 		// The $size parameter is not used but required by the WordPress filter.
 		// Only process if Divi is active and we're on frontend.
 		if ( ! $this->is_divi_active() || is_admin() ) {
