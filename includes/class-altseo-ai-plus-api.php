@@ -71,35 +71,35 @@ class AltSEO_AI_Plus_API {
 	 * @since 1.0.0
 	 */
 	private function init_elementor_compatibility() {
-		// Hook into Elementor's image rendering
+		// Hook into Elementor's image rendering.
 		add_filter( 'wp_get_attachment_image_attributes', array( $this, 'elementor_image_attributes' ), 10, 3 );
 
-		// Hook into Elementor's dynamic content
+		// Hook into Elementor's dynamic content.
 		add_filter( 'elementor/dynamic_tags/get_image_alt', array( $this, 'elementor_dynamic_image_alt' ), 10, 2 );
-		
-		// Hook for Elementor dynamic tags rendering
+
+		// Hook for Elementor dynamic tags rendering.
 		add_filter( 'elementor/dynamic_tags/render_tag', array( $this, 'elementor_render_dynamic_tag' ), 10, 2 );
-		
-		// Hook into Elementor frontend output
+
+		// Hook into Elementor frontend output.
 		add_filter( 'elementor/frontend/html_output', array( $this, 'fix_elementor_empty_alt' ), 20, 1 );
-		
-		// Hook for Elementor frontend rendering
+
+		// Hook for Elementor frontend rendering.
 		add_action( 'elementor/frontend/after_enqueue_styles', array( $this, 'elementor_frontend_hooks' ) );
 
-		// Hook for Elementor widget image rendering
+		// Hook for Elementor widget image rendering.
 		add_filter( 'elementor/widget/render_content', array( $this, 'elementor_widget_render_content' ), 10, 2 );
 
-		// Additional Elementor-specific hooks
+		// Additional Elementor-specific hooks.
 		add_filter( 'elementor/frontend/the_content', array( $this, 'elementor_process_content' ), 10, 1 );
 		add_action( 'elementor/frontend/widget/before_render', array( $this, 'elementor_before_widget_render' ), 10, 1 );
 
-		// Hook into WordPress image functions that Elementor uses
+		// Hook into WordPress image functions that Elementor uses.
 		add_filter( 'wp_get_attachment_image', array( $this, 'elementor_attachment_image_filter' ), 10, 5 );
 
-		// Hook into the image attributes specifically for featured images
+		// Hook into the image attributes specifically for featured images.
 		add_filter( 'post_thumbnail_html', array( $this, 'elementor_post_thumbnail_html' ), 10, 5 );
-		
-		// Add frontend script to fix dynamic alt attributes
+
+		// Add frontend script to fix dynamic alt attributes.
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_elementor_alt_fix_script' ) );
 	}
 
@@ -109,13 +109,13 @@ class AltSEO_AI_Plus_API {
 	 * @since 1.0.0
 	 */
 	private function init_divi_compatibility() {
-		// Hook into Divi's image rendering
+		// Hook into Divi's image rendering.
 		add_filter( 'et_pb_image_src', array( $this, 'divi_image_src_filter' ), 10, 2 );
 
-		// Hook into Divi's module content
+		// Hook into Divi's module content.
 		add_filter( 'et_pb_module_content', array( $this, 'divi_module_content_filter' ), 10, 3 );
 
-		// Hook into Divi's image alt text
+		// Hook into Divi's image alt text.
 		add_filter( 'wp_get_attachment_image_attributes', array( $this, 'divi_image_attributes' ), 5, 3 );
 	}
 
@@ -129,15 +129,16 @@ class AltSEO_AI_Plus_API {
 	 * @since 1.0.0
 	 */
 	public function elementor_image_attributes( $attr, $attachment, $size ) {
-		// Only process if Elementor is active and we're on frontend
+		// The $size parameter is not used but required by the WordPress filter.
+		// Only process if Elementor is active and we're on frontend.
 		if ( ! $this->is_elementor_active() || is_admin() ) {
 			return $attr;
 		}
 
-		// Get our generated alt text for this attachment
+		// Get our generated alt text for this attachment.
 		$our_alt_text = get_post_meta( $attachment->ID, '_wp_attachment_image_alt', true );
 
-		// If we have our alt text and it's not empty, use it
+		// If we have our alt text and it's not empty, use it.
 		if ( ! empty( $our_alt_text ) ) {
 			$attr['alt'] = $our_alt_text;
 		}
@@ -154,29 +155,29 @@ class AltSEO_AI_Plus_API {
 	 * @since 1.0.0
 	 */
 	public function elementor_dynamic_image_alt( $alt_text, $settings ) {
-		// Only process if we're dealing with featured images or attachment images
+		// Only process if we're dealing with featured images or attachment images.
 		if ( isset( $settings['image']['id'] ) ) {
 			$attachment_id = $settings['image']['id'];
-			$our_alt_text = get_post_meta( $attachment_id, '_wp_attachment_image_alt', true );
-			
+			$our_alt_text  = get_post_meta( $attachment_id, '_wp_attachment_image_alt', true );
+
 			if ( ! empty( $our_alt_text ) ) {
 				return $our_alt_text;
 			}
 		} elseif ( isset( $settings['id'] ) ) {
-			// Sometimes Elementor uses a direct ID property
+			// Sometimes Elementor uses a direct ID property.
 			$attachment_id = $settings['id'];
-			$our_alt_text = get_post_meta( $attachment_id, '_wp_attachment_image_alt', true );
-			
+			$our_alt_text  = get_post_meta( $attachment_id, '_wp_attachment_image_alt', true );
+
 			if ( ! empty( $our_alt_text ) ) {
 				return $our_alt_text;
 			}
 		} elseif ( isset( $settings['image']['url'] ) && ! empty( $settings['image']['url'] ) ) {
-			// Try to get attachment ID from URL
+			// Try to get attachment ID from URL.
 			$attachment_id = attachment_url_to_postid( $settings['image']['url'] );
-			
+
 			if ( $attachment_id ) {
 				$our_alt_text = get_post_meta( $attachment_id, '_wp_attachment_image_alt', true );
-				
+
 				if ( ! empty( $our_alt_text ) ) {
 					return $our_alt_text;
 				}
@@ -192,7 +193,7 @@ class AltSEO_AI_Plus_API {
 	 * @since 1.0.0
 	 */
 	public function elementor_frontend_hooks() {
-		// Add filter to modify Elementor's image output
+		// Add filter to modify Elementor's image output.
 		add_filter( 'elementor/frontend/widget/should_render', array( $this, 'elementor_should_render_widget' ), 10, 2 );
 	}
 
@@ -205,33 +206,33 @@ class AltSEO_AI_Plus_API {
 	 * @since 1.0.0
 	 */
 	public function elementor_widget_render_content( $content, $widget ) {
-		// Only process image-related widgets
+		// Only process image-related widgets.
 		if ( ! in_array( $widget->get_name(), array( 'image', 'theme-post-featured-image' ), true ) ) {
 			return $content;
 		}
 
-		// Get widget settings
+		// Get widget settings.
 		$settings = $widget->get_settings_for_display();
 
-		// Process featured image widgets
+		// Process featured image widgets.
 		if ( 'theme-post-featured-image' === $widget->get_name() ) {
 			$content = $this->process_elementor_featured_image_content( $content );
 		}
 
-		// Process regular image widgets
+		// Process regular image widgets.
 		if ( 'image' === $widget->get_name() && isset( $settings['image']['id'] ) ) {
 			$attachment_id = $settings['image']['id'];
 			$our_alt_text  = get_post_meta( $attachment_id, '_wp_attachment_image_alt', true );
 
 			if ( ! empty( $our_alt_text ) ) {
-				// Replace empty or existing alt attributes with our generated one
+				// Replace empty or existing alt attributes with our generated one.
 				$content = preg_replace(
 					'/(<img[^>]*?)alt=["\'][^"\']*["\']([^>]*>)/i',
 					'$1alt="' . esc_attr( $our_alt_text ) . '"$2',
 					$content
 				);
 
-				// If no alt attribute exists, add it
+				// If no alt attribute exists, add it.
 				if ( ! preg_match( '/alt\s*=/i', $content ) ) {
 					$content = preg_replace(
 						'/(<img[^>]*?)(\/?>)/i',
@@ -263,14 +264,14 @@ class AltSEO_AI_Plus_API {
 		$our_alt_text      = get_post_meta( $featured_image_id, '_wp_attachment_image_alt', true );
 
 		if ( ! empty( $our_alt_text ) ) {
-			// Replace empty or existing alt attributes with our generated one
+			// Replace empty or existing alt attributes with our generated one.
 			$content = preg_replace(
 				'/(<img[^>]*?)alt=["\'][^"\']*["\']([^>]*>)/i',
 				'$1alt="' . esc_attr( $our_alt_text ) . '"$2',
 				$content
 			);
 
-			// If no alt attribute exists, add it
+			// If no alt attribute exists, add it.
 			if ( ! preg_match( '/alt\s*=/i', $content ) ) {
 				$content = preg_replace(
 					'/(<img[^>]*?)(\/?>)/i',
@@ -312,7 +313,8 @@ class AltSEO_AI_Plus_API {
 	 * @since 1.0.0
 	 */
 	public function elementor_should_render_widget( $should_render, $widget ) {
-		// Always allow rendering, we just want to hook into the process
+		// The $widget parameter is not used but required by the Elementor hook.
+		// Always allow rendering, we just want to hook into the process.
 		return $should_render;
 	}
 
@@ -324,12 +326,12 @@ class AltSEO_AI_Plus_API {
 	 * @since 1.0.0
 	 */
 	public function elementor_process_content( $content ) {
-		// Only process if Elementor is active and we're on frontend
+		// Only process if Elementor is active and we're on frontend.
 		if ( ! $this->is_elementor_active() || is_admin() ) {
 			return $content;
 		}
 
-		// Process all images in the content and ensure they have proper alt text
+		// Process all images in the content and ensure they have proper alt text.
 		$content = preg_replace_callback(
 			'/<img([^>]+)>/i',
 			array( $this, 'elementor_image_callback' ),
@@ -350,34 +352,34 @@ class AltSEO_AI_Plus_API {
 		$img_tag    = $matches[0];
 		$attributes = $matches[1];
 
-		// Extract the attachment ID from various possible sources
+		// Extract the attachment ID from various possible sources.
 		$attachment_id = null;
 
-		// Try to get attachment ID from wp-image class
+		// Try to get attachment ID from wp-image class.
 		if ( preg_match( '/wp-image-(\d+)/', $attributes, $id_matches ) ) {
 			$attachment_id = intval( $id_matches[1] );
 		}
 
-		// Try to get attachment ID from data-id attribute
+		// Try to get attachment ID from data-id attribute.
 		if ( ! $attachment_id && preg_match( '/data-id=["\'](\d+)["\']/', $attributes, $id_matches ) ) {
 			$attachment_id = intval( $id_matches[1] );
 		}
 
-		// If we found an attachment ID, try to get our alt text
+		// If we found an attachment ID, try to get our alt text.
 		if ( $attachment_id ) {
 			$our_alt_text = get_post_meta( $attachment_id, '_wp_attachment_image_alt', true );
 
 			if ( ! empty( $our_alt_text ) ) {
-				// Check if alt attribute already exists
+				// Check if alt attribute already exists.
 				if ( preg_match( '/alt\s*=\s*["\'][^"\']*["\']/', $attributes ) ) {
-					// Replace existing alt attribute
+					// Replace existing alt attribute.
 					$img_tag = preg_replace(
 						'/alt\s*=\s*["\'][^"\']*["\']/',
 						'alt="' . esc_attr( $our_alt_text ) . '"',
 						$img_tag
 					);
 				} else {
-					// Add alt attribute
+					// Add alt attribute.
 					$img_tag = str_replace( '<img', '<img alt="' . esc_attr( $our_alt_text ) . '"', $img_tag );
 				}
 			}
@@ -395,7 +397,8 @@ class AltSEO_AI_Plus_API {
 	 * @since 1.0.0
 	 */
 	public function divi_image_src_filter( $src, $args ) {
-		// This is mainly for tracking - the actual alt text injection happens in other filters
+		// The $args parameter is not used but required by the Divi filter.
+		// This is mainly for tracking - the actual alt text injection happens in other filters.
 		return $src;
 	}
 
@@ -409,12 +412,13 @@ class AltSEO_AI_Plus_API {
 	 * @since 1.0.0
 	 */
 	public function divi_module_content_filter( $content, $function_name, $props ) {
-		// Only process if Divi is active and we're dealing with image modules
+		// The $props parameter is not used but required by the Divi filter.
+		// Only process if Divi is active and we're dealing with image modules.
 		if ( ! $this->is_divi_active() || is_admin() ) {
 			return $content;
 		}
 
-		// Process image-related Divi modules
+		// Process image-related Divi modules.
 		if ( in_array( $function_name, array( 'et_pb_image', 'et_pb_gallery' ), true ) ) {
 			$content = preg_replace_callback(
 				'/<img([^>]+)>/i',
@@ -436,15 +440,16 @@ class AltSEO_AI_Plus_API {
 	 * @since 1.0.0
 	 */
 	public function divi_image_attributes( $attr, $attachment, $size ) {
-		// Only process if Divi is active and we're on frontend
+		// The $size parameter is not used but required by the WordPress filter.
+		// Only process if Divi is active and we're on frontend.
 		if ( ! $this->is_divi_active() || is_admin() ) {
 			return $attr;
 		}
 
-		// Get our generated alt text for this attachment
+		// Get our generated alt text for this attachment.
 		$our_alt_text = get_post_meta( $attachment->ID, '_wp_attachment_image_alt', true );
 
-		// If we have our alt text and it's not empty, use it
+		// If we have our alt text and it's not empty, use it.
 		if ( ! empty( $our_alt_text ) ) {
 			$attr['alt'] = $our_alt_text;
 		}
@@ -885,12 +890,12 @@ class AltSEO_AI_Plus_API {
 						$featured_alt_array = array( $featured_filename => $enhanced_featured_alt );
 						update_post_meta( $post_id, 'altseo_featured_image_alts', $featured_alt_array );
 
-						// Elementor compatibility: Set Elementor-specific meta if Elementor is active
+						// Elementor compatibility: Set Elementor-specific meta if Elementor is active.
 						if ( $this->is_elementor_active() ) {
-							// Update Elementor's image alt text meta
+							// Update Elementor's image alt text meta.
 							update_post_meta( $featured_image_id, '_elementor_alt_text', $enhanced_featured_alt );
 
-							// Clear any Elementor-related caches if possible
+							// Clear any Elementor-related caches if possible..
 							if ( function_exists( 'wp_cache_flush' ) ) {
 								wp_cache_flush();
 							}
@@ -914,7 +919,7 @@ class AltSEO_AI_Plus_API {
 		// Now update the actual post content with the new alt attributes.
 		$this->update_post_content_with_alt_text( $post_id, $alt_array_saved );
 
-		// Force apply featured image alt text for page builders
+		// Force apply featured image alt text for page builders.
 		$this->force_apply_featured_image_alt( $post_id );
 
 		libxml_clear_errors(); // Clear any parsing errors.
@@ -1711,18 +1716,18 @@ class AltSEO_AI_Plus_API {
 		$featured_image_id = get_post_thumbnail_id( $post_id );
 		$our_alt_text      = get_post_meta( $featured_image_id, '_wp_attachment_image_alt', true );
 
-		// Additional meta fields that some page builders might use
+		// Additional meta fields that some page builders might use.
 		if ( ! empty( $our_alt_text ) ) {
-			// Update various meta fields that page builders might check
+			// Update various meta fields that page builders might check.
 			update_post_meta( $featured_image_id, 'alt', $our_alt_text );
 			update_post_meta( $featured_image_id, '_wp_attachment_alt', $our_alt_text );
 
-			// For Elementor
+			// For Elementor.
 			if ( $this->is_elementor_active() ) {
 				update_post_meta( $featured_image_id, '_elementor_image_alt', $our_alt_text );
 			}
 
-			// For Divi
+			// For Divi.
 			if ( $this->is_divi_active() ) {
 				update_post_meta( $featured_image_id, '_et_pb_image_alt', $our_alt_text );
 			}
@@ -1731,29 +1736,29 @@ class AltSEO_AI_Plus_API {
 
 	/**
 	 * Filter for Elementor dynamic tags rendering
-	 * 
-	 * @param mixed                   $value The tag value.
+	 *
+	 * @param mixed                                $value The tag value.
 	 * @param \Elementor\Core\DynamicTags\Base_Tag $tag The tag instance.
 	 * @return mixed The filtered value
 	 * @since 1.0.0
 	 */
 	public function elementor_render_dynamic_tag( $value, $tag ) {
-		// Only process alt text tags
+		// Only process alt text tags.
 		if ( $tag->get_name() === 'alt-text' || strpos( $tag->get_name(), 'alt' ) !== false ) {
-			// If the value is empty, try to get the alt text from related image
+			// If the value is empty, try to get the alt text from related image.
 			if ( empty( $value ) ) {
 				$settings = $tag->get_settings();
-				
-				// Try to get the image ID from the settings
+
+				// Try to get the image ID from the settings.
 				$image_id = null;
-				
+
 				if ( isset( $settings['image']['id'] ) ) {
 					$image_id = $settings['image']['id'];
 				} elseif ( isset( $settings['fallback']['id'] ) ) {
 					$image_id = $settings['fallback']['id'];
 				}
-				
-				// If we found an image ID, get its alt text
+
+				// If we found an image ID, get its alt text.
 				if ( $image_id ) {
 					$alt_text = get_post_meta( $image_id, '_wp_attachment_image_alt', true );
 					if ( ! empty( $alt_text ) ) {
@@ -1762,7 +1767,7 @@ class AltSEO_AI_Plus_API {
 				}
 			}
 		}
-		
+
 		return $value;
 	}
 
@@ -1774,12 +1779,12 @@ class AltSEO_AI_Plus_API {
 	 * @since 1.0.0
 	 */
 	public function fix_elementor_empty_alt( $html ) {
-		// Only process if we're on frontend
+		// Only process if we're on frontend.
 		if ( is_admin() ) {
 			return $html;
 		}
-		
-		// Use regex to find images with empty alt attributes
+
+		// Use regex to find images with empty alt attributes.
 		return preg_replace_callback(
 			'/<img([^>]*)alt=""([^>]*)>/',
 			array( $this, 'replace_empty_alt_callback' ),
@@ -1796,37 +1801,37 @@ class AltSEO_AI_Plus_API {
 	 */
 	private function replace_empty_alt_callback( $matches ) {
 		$before_alt = $matches[1];
-		$after_alt = $matches[2];
-		
-		// Try to extract the image ID from class or data attributes
+		$after_alt  = $matches[2];
+
+		// Try to extract the image ID from class or data attributes.
 		$image_id = null;
-		
-		// Look for wp-image-{ID} class
+
+		// Look for wp-image-{ID} class.
 		if ( preg_match( '/class=["\'](.*?)wp-image-(\d+)(.*?)["\']/', $before_alt . $after_alt, $class_matches ) ) {
 			$image_id = $class_matches[2];
 		}
-		
-		// Look for data-id attribute
+
+		// Look for data-id attribute.
 		if ( ! $image_id && preg_match( '/data-id=["\'](\d+)["\']/', $before_alt . $after_alt, $data_matches ) ) {
 			$image_id = $data_matches[1];
 		}
-		
-		// Look for attachment ID in the SRC
+
+		// Look for attachment ID in the SRC.
 		if ( ! $image_id && preg_match( '/src=["\'](.*?)["\']/', $before_alt . $after_alt, $src_matches ) ) {
-			$src = $src_matches[1];
+			$src      = $src_matches[1];
 			$image_id = attachment_url_to_postid( $src );
 		}
-		
-		// If we found an image ID, get its alt text
+
+		// If we found an image ID, get its alt text.
 		if ( $image_id ) {
 			$alt_text = get_post_meta( $image_id, '_wp_attachment_image_alt', true );
 			if ( ! empty( $alt_text ) ) {
-				// Replace the empty alt with the actual alt text
+				// Replace the empty alt with the actual alt text.
 				return '<img' . $before_alt . 'alt="' . esc_attr( $alt_text ) . '"' . $after_alt . '>';
 			}
 		}
-		
-		// If we couldn't find or fix it, return the original match
+
+		// If we couldn't find or fix it, return the original match.
 		return $matches[0];
 	}
 
@@ -1842,22 +1847,22 @@ class AltSEO_AI_Plus_API {
 	 * @since 1.0.0
 	 */
 	public function elementor_attachment_image_filter( $html, $post_id, $size, $icon, $attr ) {
-		// Only process if Elementor is active and we're on frontend
+		// Only process if Elementor is active and we're on frontend.
 		if ( ! $this->is_elementor_active() || is_admin() ) {
 			return $html;
 		}
-		
-		// Check if the alt attribute is empty or not present
+
+		// Check if the alt attribute is empty or not present.
 		if ( empty( $attr['alt'] ) && strpos( $html, 'alt=""' ) !== false ) {
-			// Get our alt text for this attachment
+			// Get our alt text for this attachment.
 			$our_alt_text = get_post_meta( $post_id, '_wp_attachment_image_alt', true );
-			
-			// If we have our alt text, replace the empty alt
+
+			// If we have our alt text, replace the empty alt.
 			if ( ! empty( $our_alt_text ) ) {
 				$html = str_replace( 'alt=""', 'alt="' . esc_attr( $our_alt_text ) . '"', $html );
 			}
 		}
-		
+
 		return $html;
 	}
 
@@ -1873,48 +1878,48 @@ class AltSEO_AI_Plus_API {
 	 * @since 1.0.0
 	 */
 	public function elementor_post_thumbnail_html( $html, $post_id, $thumbnail_id, $size, $attr ) {
-		// Only process if Elementor is active and we're on frontend
+		// Only process if Elementor is active and we're on frontend.
 		if ( ! $this->is_elementor_active() || is_admin() ) {
 			return $html;
 		}
-		
-		// Check if the alt attribute is empty
+
+		// Check if the alt attribute is empty.
 		if ( strpos( $html, 'alt=""' ) !== false || ! isset( $attr['alt'] ) ) {
-			// Get our alt text for this attachment
+			// Get our alt text for this attachment.
 			$our_alt_text = get_post_meta( $thumbnail_id, '_wp_attachment_image_alt', true );
-			
-			// If we have our alt text, replace the empty alt
+
+			// If we have our alt text, replace the empty alt.
 			if ( ! empty( $our_alt_text ) ) {
 				$html = str_replace( 'alt=""', 'alt="' . esc_attr( $our_alt_text ) . '"', $html );
 			}
 		}
-		
+
 		return $html;
 	}
 
 	/**
 	 * Enqueue frontend script to fix Elementor dynamic alt tags
-	 * 
+	 *
 	 * @since 1.0.0
 	 */
 	public function enqueue_elementor_alt_fix_script() {
-		// Only enqueue on frontend when Elementor is active
+		// Only enqueue on frontend when Elementor is active.
 		if ( ! $this->is_elementor_active() || is_admin() ) {
 			return;
 		}
-		
-		// Make sure public js directory exists
-		$plugin_dir_path = plugin_dir_path( dirname( __FILE__ ) );
-		$js_dir_path = $plugin_dir_path . 'public/js';
-		
+
+		// Make sure public js directory exists.
+		$plugin_dir_path = plugin_dir_path( __DIR__ );
+		$js_dir_path     = $plugin_dir_path . 'public/js';
+
 		if ( ! file_exists( $js_dir_path ) ) {
 			wp_mkdir_p( $js_dir_path );
 		}
-		
-		// Path to the JS file
+
+		// Path to the JS file.
 		$js_file_path = $js_dir_path . '/altseo-elementor-fix.js';
-		
-		// Create the file if it doesn't exist
+
+		// Create the file if it doesn't exist.
 		if ( ! file_exists( $js_file_path ) ) {
 			$js_content = <<<'EOT'
 /*!
@@ -1925,29 +1930,29 @@ class AltSEO_AI_Plus_API {
 (function() {
     'use strict';
 
-    // Function to fix dynamic alt attributes
+    // Function to fix dynamic alt attributes.
     function fixElementorDynamicAlts() {
-        // Find all images with empty alt attributes
+        // Find all images with empty alt attributes.
         var images = document.querySelectorAll('img[alt=""]');
         
         images.forEach(function(img) {
-            // Try to get ID from classes
+            // Try to get ID from classes.
             var classes = img.className.split(' ');
             var imageId = null;
             
-            // Look for wp-image-{ID} class
+            // Look for wp-image-{ID} class.
             classes.forEach(function(cls) {
                 if (cls.indexOf('wp-image-') === 0) {
                     imageId = cls.replace('wp-image-', '');
                 }
             });
             
-            // Look for data-id attribute
+            // Look for data-id attribute.
             if (!imageId && img.dataset && img.dataset.id) {
                 imageId = img.dataset.id;
             }
             
-            // Look for special elementor attributes
+            // Look for special elementor attributes.
             if (!imageId && img.dataset && img.dataset.settings) {
                 try {
                     var settings = JSON.parse(img.dataset.settings);
@@ -1959,21 +1964,21 @@ class AltSEO_AI_Plus_API {
                 }
             }
             
-            // Try to extract ID from the source URL
+            // Try to extract ID from the source URL.
             if (!imageId && img.src) {
-                // Check if URL contains -\\d+ before file extension
+                // Check if URL contains -\\d+ before file extension.
                 var match = img.src.match(/-(\d+)\.(jpe?g|png|gif|svg|webp)/i);
                 if (match && match[1]) {
-                    // This might be the attachment ID in the filename
+                    // This might be the attachment ID in the filename.
                     imageId = match[1];
                 }
             }
             
             if (imageId) {
-                // Store the image element reference for access in the XHR callback
+                // Store the image element reference for access in the XHR callback.
                 var imgElement = img;
                 
-                // Make AJAX call to get the alt text
+                // Make AJAX call to get the alt text.
                 var xhr = new XMLHttpRequest();
                 xhr.open('POST', altSeoElementorData.ajaxUrl, true);
                 xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -1983,9 +1988,9 @@ class AltSEO_AI_Plus_API {
                             try {
                                 var response = JSON.parse(xhr.responseText);
                                 if (response.success && response.data) {
-                                    // Set the alt attribute
+                                    // Set the alt attribute.
                                     imgElement.alt = response.data;
-                                    // Also update the aria-label if it exists
+                                    // Also update the aria-label if it exists.
                                     if (imgElement.hasAttribute('aria-label')) {
                                         imgElement.setAttribute('aria-label', response.data);
                                     }
@@ -2003,18 +2008,18 @@ class AltSEO_AI_Plus_API {
         });
     }
     
-    // Run once on page load
+    // Run once on page load.
     document.addEventListener('DOMContentLoaded', function() {
-        // Wait a bit to ensure Elementor has rendered everything
+        // Wait a bit to ensure Elementor has rendered everything.
         setTimeout(fixElementorDynamicAlts, 500);
         
-        // Add mutation observer to handle dynamically added content
+        // Add mutation observer to handle dynamically added content.
         var observer = new MutationObserver(function(mutations) {
             var shouldFix = false;
             
             mutations.forEach(function(mutation) {
                 if (mutation.addedNodes && mutation.addedNodes.length > 0) {
-                    // Check if any of the added nodes might contain images
+                    // Check if any of the added nodes might contain images.
                     for (var i = 0; i < mutation.addedNodes.length; i++) {
                         var node = mutation.addedNodes[i];
                         if (node.nodeType === 1) { // Element node
@@ -2032,15 +2037,15 @@ class AltSEO_AI_Plus_API {
             }
         });
         
-        // Start observing the entire document
+        // Start observing the entire document.
         observer.observe(document.body, {
             childList: true,
             subtree: true
         });
         
-        // Also listen for Elementor frontend events if Elementor is available
+        // Also listen for Elementor frontend events if Elementor is available.
         if (window.elementorFrontend) {
-            // Run after Elementor frontend init
+            // Run after Elementor frontend init.
             if (elementorFrontend.hooks) {
                 elementorFrontend.hooks.addAction('frontend/element_ready/global', function() {
                     setTimeout(fixElementorDynamicAlts, 500);
@@ -2051,11 +2056,22 @@ class AltSEO_AI_Plus_API {
 })();
 EOT;
 
-			file_put_contents( $js_file_path, $js_content );
+			// Use WP_Filesystem instead of direct file operation.
+			global $wp_filesystem;
+
+			if ( ! function_exists( 'WP_Filesystem' ) ) {
+				require_once ABSPATH . 'wp-admin/includes/file.php';
+			}
+
+			WP_Filesystem();
+
+			if ( $wp_filesystem ) {
+				$wp_filesystem->put_contents( $js_file_path, $js_content, FS_CHMOD_FILE );
+			}
 		}
-		
-		// Register and enqueue the script
-		$plugin_dir_url = plugin_dir_url( dirname( __FILE__ ) );
+
+		// Register and enqueue the script.
+		$plugin_dir_url = plugin_dir_url( __DIR__ );
 		wp_enqueue_script(
 			'altseo-elementor-fix',
 			$plugin_dir_url . 'public/js/altseo-elementor-fix.js',
@@ -2063,14 +2079,14 @@ EOT;
 			filemtime( $js_file_path ),
 			true
 		);
-		
-		// Localize script with essential data
+
+		// Localize script with essential data.
 		wp_localize_script(
 			'altseo-elementor-fix',
 			'altSeoElementorData',
 			array(
-				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'nonce'   => wp_create_nonce( 'altseo_frontend_nonce' ),
+				'ajaxUrl'   => admin_url( 'admin-ajax.php' ),
+				'nonce'     => wp_create_nonce( 'altseo_frontend_nonce' ),
 				'pluginUrl' => $plugin_dir_url,
 			)
 		);
@@ -2079,11 +2095,11 @@ EOT;
 	/**
 	 * Handle widget before rendering in Elementor
 	 *
-	 * @param \Elementor\Widget_Base $widget The Elementor widget instance
+	 * @param \Elementor\Widget_Base $widget The Elementor widget instance.
 	 * @since 1.0.0
 	 */
 	public function elementor_before_widget_render( $widget ) {
-		// Only process image-related widgets
+		// Only process image-related widgets.
 		$target_widgets = array(
 			'image',
 			'theme-post-featured-image',
@@ -2099,20 +2115,20 @@ EOT;
 			return;
 		}
 
-		// Get widget settings
+		// Get widget settings.
 		$settings = $widget->get_settings_for_display();
-		
-		// Handle image settings
+
+		// Handle image settings.
 		if ( isset( $settings['image']['id'] ) ) {
 			$image_id = $settings['image']['id'];
 			$alt_text = get_post_meta( $image_id, '_wp_attachment_image_alt', true );
-			
+
 			if ( ! empty( $alt_text ) ) {
-				// Add the alt text to the settings
+				// Add the alt text to the settings.
 				$widget->set_settings( 'image_custom_alt', 'yes' );
 				$widget->set_settings( 'image_alt', $alt_text );
-				
-				// For image carousel, also add it to the settings array
+
+				// For image carousel, also add it to the settings array.
 				if ( $widget->get_name() === 'image-carousel' && isset( $settings['carousel_image'] ) ) {
 					foreach ( $settings['carousel_image'] as $index => $image ) {
 						if ( isset( $image['id'] ) && $image['id'] === $image_id ) {
@@ -2124,15 +2140,15 @@ EOT;
 			}
 		}
 
-		// Handle special case for Post Featured Image widget
+		// Handle special case for Post Featured Image widget.
 		if ( $widget->get_name() === 'theme-post-featured-image' ) {
 			global $post;
 			if ( $post && has_post_thumbnail( $post->ID ) ) {
 				$featured_image_id = get_post_thumbnail_id( $post->ID );
-				$alt_text = get_post_meta( $featured_image_id, '_wp_attachment_image_alt', true );
-				
+				$alt_text          = get_post_meta( $featured_image_id, '_wp_attachment_image_alt', true );
+
 				if ( ! empty( $alt_text ) ) {
-					// Add the alt text to the settings
+					// Add the alt text to the settings.
 					$widget->set_settings( 'custom_alt', 'yes' );
 					$widget->set_settings( 'alt_text', $alt_text );
 				}

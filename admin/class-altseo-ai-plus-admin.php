@@ -967,54 +967,57 @@ class AltSEO_AI_Plus_Admin {
 	 * @since 1.0.0
 	 */
 	public function ajax_get_image_alt() {
-		// Verify nonce for security
+		// Verify nonce for security.
 		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'altseo_frontend_nonce' ) ) {
 			wp_send_json_error( 'Invalid security token' );
 			return;
 		}
 
-		// Get the image ID
+		// Get the image ID.
 		$image_id = isset( $_POST['image_id'] ) ? absint( $_POST['image_id'] ) : 0;
-		
+
 		if ( ! $image_id ) {
 			wp_send_json_error( 'Invalid image ID' );
 			return;
 		}
-		
-		// Get the alt text
+
+		// Get the alt text.
 		$alt_text = get_post_meta( $image_id, '_wp_attachment_image_alt', true );
-		
-		// If empty, try to generate it
+
+		// If empty, try to generate it.
 		if ( empty( $alt_text ) ) {
 			try {
 				$altseo_api = new AltSEO_AI_Plus_API();
-				
-				// Try to generate alt text for this image
+
+				// Try to generate alt text for this image.
 				$attachment_url = wp_get_attachment_url( $image_id );
 				if ( $attachment_url ) {
-					// Get keywords from the parent post, if possible
+					// Get keywords from the parent post, if possible.
 					$parent_post_id = get_post_field( 'post_parent', $image_id );
-					$keywords = '';
-					
+					$keywords       = '';
+
 					if ( $parent_post_id ) {
 						$keywords = get_post_meta( $parent_post_id, 'altseo_keywords_tag', true );
 					}
-					
-					// Generate alt text
+
+					// Generate alt text.
 					$alt_text = $altseo_api->generate_image_alt( $attachment_url, $keywords, $parent_post_id );
-					
-					// Save the generated alt text
+
+					// Save the generated alt text.
 					if ( ! empty( $alt_text ) ) {
 						update_post_meta( $image_id, '_wp_attachment_image_alt', $alt_text );
 					}
 				}
 			} catch ( Exception $e ) {
-				// Log the error but continue
-				error_log( 'AltSEO AI+: Error generating alt text for image ID ' . $image_id . ': ' . $e->getMessage() );
+				// Log the error but continue.
+				// Using wp_debug_log is safer than error_log according to WordPress standards.
+				if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
+					error_log( 'AltSEO AI+: Error generating alt text for image ID ' . $image_id . ': ' . $e->getMessage() );
+				}
 			}
 		}
-		
-		// Return the alt text (empty or generated)
+
+		// Return the alt text (empty or generated).
 		wp_send_json_success( $alt_text );
 	}
 }
