@@ -22,6 +22,8 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
+ * 
+ * Next Release: ^PHP.8
  *
  * You should have received a copy of the GNU General Public License
  * along with AltSEO AI Plus. If not, see
