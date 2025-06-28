@@ -1,0 +1,15 @@
+div.progress_section,div.progress_section2
+{
+	display:none;
+}
+div.progress_bar,div.progress_bar2
+{
+	margin-top:10px;
+	max-width:410px;
+	min-height:30px;
+	border:solid 1px #c3c4c7;
+}
+div.progress_report,div.progress_report2
+{
+	margin-top: 10px;
+}

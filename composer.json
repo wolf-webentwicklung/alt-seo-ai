@@ -1,0 +1,31 @@
+{
+    "name": "wolf/altseo-ai-plus",
+    "description": "Automatically generates image alt text with Custom Keywords",
+    "type": "wordpress-plugin",
+    "require": {
+        "php": ">=7.2"
+    },
+    "license": "GPL-2.0-or-later",
+    "require-dev": {
+        "squizlabs/php_codesniffer": "^3.13",
+        "wp-coding-standards/wpcs": "^3.1",
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.1",
+        "phpcompatibility/php-compatibility": "^9.3"
+    },
+    "scripts": {
+        "phpcs": "phpcs --standard=phpcs.xml .",
+        "phpcs-summary": "phpcs --report=summary --standard=phpcs.xml .",
+        "phpcbf": "phpcbf --standard=phpcs.xml .",
+        "check": [
+            "@phpcs"
+        ],
+        "fix": [
+            "@phpcbf"
+        ]
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    }
+}

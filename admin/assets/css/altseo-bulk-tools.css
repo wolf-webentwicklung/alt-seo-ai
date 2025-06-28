@@ -1,0 +1,63 @@
+/* Custom styles for the stop button and halted process notice */
+.altseo-stop-button {
+	background-color: #dc3232 !important;
+	border-color: #dc3232 !important;
+	color: #fff !important;
+	margin-left: 10px !important;
+	box-shadow: none !important;
+}
+
+.altseo-stop-button:hover {
+	background-color: #b32d2e !important;
+	border-color: #b32d2e !important;
+	color: #fff !important;
+}
+
+.altseo-stop-button:focus {
+	background-color: #b32d2e !important;
+	border-color: #b32d2e !important;
+	color: #fff !important;
+	box-shadow: 0 0 0 1px #b32d2e !important;
+}
+
+.altseo-bulk-action-buttons {
+	display: flex;
+	align-items: center;
+	margin-bottom: 10px;
+}
+
+/* More specific selectors to ensure styles are applied */
+.altseo-bulk-tools .altseo-stop-button,
+.altseo-bulk-action-buttons .altseo-stop-button,
+button.altseo-stop-button {
+	background-color: #dc3232 !important;
+	border-color: #dc3232 !important;
+	color: #fff !important;
+	margin-left: 10px !important;
+	box-shadow: none !important;
+}
+
+.altseo-bulk-tools .altseo-stop-button:hover,
+.altseo-bulk-action-buttons .altseo-stop-button:hover,
+button.altseo-stop-button:hover {
+	background-color: #b32d2e !important;
+	border-color: #b32d2e !important;
+	color: #fff !important;
+}
+
+.altseo-bulk-tools .altseo-stop-button:focus,
+.altseo-bulk-action-buttons .altseo-stop-button:focus,
+button.altseo-stop-button:focus {
+	background-color: #b32d2e !important;
+	border-color: #b32d2e !important;
+	color: #fff !important;
+	box-shadow: 0 0 0 1px #b32d2e !important;
+}
+
+.process-halted {
+	background-color: #fcf8e3;
+	border-left: 4px solid #f0ad4e;
+	padding: 8px 12px;
+	margin: 5px 0;
+	color: #8a6d3b;
+}
