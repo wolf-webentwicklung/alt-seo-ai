@@ -210,7 +210,7 @@ class AltSEO_AI_Public {
 	 * @return   array                  The filtered attributes.
 	 * @since    1.0.0
 	 */
-	public function fix_elementor_image_attributes( $attr, $attachment, $size ) {
+	public function fix_elementor_image_attributes( $attr, $attachment, $size ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed
 		// Size parameter is not used, but is required by the WordPress filter.
 		// Only process if alt attribute is empty or missing.
 		if ( empty( $attr['alt'] ) ) {

@@ -97,12 +97,12 @@ class AltSEO_AI_Admin {
 			wp_enqueue_script( 'altseo-fallback-detector', plugin_dir_url( __FILE__ ) . 'assets/js/fallback-detector.js', array(), '1.0.1', true );
 
 			// Pass data to the Vue app.
-			// Ensure models are always arrays before applying array_map
+			// Ensure models are always arrays before applying array_map.
 			$available_models = get_option( 'altseo_available_models', array( 'gpt-3.5-turbo' ) );
 			if ( ! is_array( $available_models ) ) {
 				$available_models = array( $available_models );
 			}
-			
+
 			$available_vision_models = get_option( 'altseo_available_vision_models', array( 'gpt-4o-mini' ) );
 			if ( ! is_array( $available_vision_models ) ) {
 				$available_vision_models = array( $available_vision_models );
@@ -196,7 +196,7 @@ class AltSEO_AI_Admin {
 			$msg = '';
 		if ( isset( $_POST['altseo_global_keywords'] ) || isset( $_POST['altseo_ai_key'] ) || isset( $_POST['submit'] ) ) {
 			$msg = '<span style="font-weight:bold;margin-left:20px;"> &#10004; ' . esc_html__( 'Saved Successfully!', 'altseo-ai' ) . '</span>';
-	
+
 			// Verify nonce.
 			if ( ! isset( $_POST['altseo_admin_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['altseo_admin_nonce'] ) ), 'altseo_admin_nonce' ) ) {
 				wp_die( esc_html__( 'Security check failed.', 'altseo-ai' ) );
@@ -245,17 +245,17 @@ class AltSEO_AI_Admin {
 		$altseo_enabled          = get_option( 'altseo_enabled', 1 );
 		$altseo_ai_key           = get_option( 'altseo_ai_key', '' );
 		$altseo_global_keywords  = get_option( 'altseo_global_keywords', '' );
-		$altseo_keyword_num     = intval( get_option( 'altseo_keyword_num', 1 ) );
-		$altseo_ai_model        = get_option( 'altseo_ai_model', 'gpt-3.5-turbo' );
-		$altseo_vision_ai_model = get_option( 'altseo_vision_ai_model', 'gpt-4o-mini' );
-		$available_models       = get_option( 'altseo_available_models', array( 'gpt-3.5-turbo' ) );
+		$altseo_keyword_num      = intval( get_option( 'altseo_keyword_num', 1 ) );
+		$altseo_ai_model         = get_option( 'altseo_ai_model', 'gpt-3.5-turbo' );
+		$altseo_vision_ai_model  = get_option( 'altseo_vision_ai_model', 'gpt-4o-mini' );
+		$available_models        = get_option( 'altseo_available_models', array( 'gpt-3.5-turbo' ) );
 		$available_vision_models = get_option( 'altseo_available_vision_models', array( 'gpt-4o-mini' ) );
-		
-		// Ensure models are always arrays
+
+		// Ensure models are always arrays.
 		if ( ! is_array( $available_models ) ) {
 			$available_models = array( $available_models );
 		}
-		
+
 		if ( ! is_array( $available_vision_models ) ) {
 			$available_vision_models = array( $available_vision_models );
 		}
@@ -487,14 +487,11 @@ class AltSEO_AI_Admin {
 				update_option( 'altseo_global_keywords', $global_keywords );
 			}
 
-			// Handle enabled option - always process this field
-			// Vue.js sends 'yes' when checked, empty string when unchecked
+			// Handle enabled option - always process this field.
+			// Vue.js sends 'yes' when checked, empty string when unchecked.
 			$enabled_value = isset( $_POST['altseo_enabled'] ) ? sanitize_text_field( wp_unslash( $_POST['altseo_enabled'] ) ) : '';
-			$enabled = ( $enabled_value === 'true' || $enabled_value === 'yes' || $enabled_value === '1' ) ? 1 : 0;
-			
-			// Debug log (remove after testing)
-			error_log( 'AltSEO Debug - altseo_enabled value received: ' . var_export( $enabled_value, true ) . ', setting to: ' . $enabled );
-			
+			$enabled       = ( 'true' === $enabled_value || 'yes' === $enabled_value || '1' === $enabled_value ) ? 1 : 0;
+
 			update_option( 'altseo_enabled', $enabled );
 
 			// Handle keyword number.

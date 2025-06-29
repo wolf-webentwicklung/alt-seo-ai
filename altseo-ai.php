@@ -75,7 +75,7 @@ function altseo_ai_check_dependencies() {
 			false,
 			false,
 			false,
-					'altseo-ai'
+			'altseo-ai'
 		);
 		return false;
 	}
@@ -144,7 +144,7 @@ function altseo_ai_init() {
 		return;
 	}
 
-	// Migrate options to ensure arrays are properly stored
+	// Migrate options to ensure arrays are properly stored.
 	altseo_ai_migrate_options();
 
 	// Initialize admin interface.
@@ -157,7 +157,7 @@ function altseo_ai_init() {
 	new AltSEO_AI_Public( 'altseo-ai', ALTSEO_AI_PLUGIN_VERSION );
 
 	// Load plugin text domain for internationalization.
-	load_plugin_textdomain( 'altseo-ai', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
+	load_plugin_textdomain( 'altseo-ai', false, plugin_basename( __DIR__ ) . '/languages' );
 }
 
 /**
@@ -165,13 +165,13 @@ function altseo_ai_init() {
  * This fixes any existing installations where options might be stored as strings
  */
 function altseo_ai_migrate_options() {
-	// Migrate available_models option
+	// Migrate available_models option.
 	$available_models = get_option( 'altseo_available_models' );
 	if ( ! is_array( $available_models ) && ! empty( $available_models ) ) {
 		update_option( 'altseo_available_models', array( $available_models ) );
 	}
 
-	// Migrate available_vision_models option
+	// Migrate available_vision_models option.
 	$available_vision_models = get_option( 'altseo_available_vision_models' );
 	if ( ! is_array( $available_vision_models ) && ! empty( $available_vision_models ) ) {
 		update_option( 'altseo_available_vision_models', array( $available_vision_models ) );
