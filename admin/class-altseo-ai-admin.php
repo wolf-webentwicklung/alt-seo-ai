@@ -386,7 +386,7 @@ class AltSEO_AI_Admin {
 		}
 
 		$altseo_api = new AltSEO_AI_API();
-		$models     = $altseo_api->get_available_models();
+		$models     = $altseo_api->fetch_available_models();
 
 		if ( ! empty( $models ) ) {
 			update_option( 'altseo_available_models', $models );
@@ -423,7 +423,7 @@ class AltSEO_AI_Admin {
 		}
 
 		$altseo_api = new AltSEO_AI_API();
-		$models     = $altseo_api->get_available_vision_models();
+		$models     = $altseo_api->get_vision_model();
 
 		if ( ! empty( $models ) ) {
 			update_option( 'altseo_available_vision_models', $models );

@@ -1431,7 +1431,7 @@ class AltSEO_AI_API {
 			require_once plugin_dir_path( __FILE__ ) . 'class-altseo-ai-language-detector.php';
 		}
 
-		$detector = new AltSEO_AI_Plus_Language_Detector();
+		$detector = new AltSEO_AI_Language_Detector();
 		return $detector->detect( $text );
 	}
 
