@@ -50,14 +50,9 @@ class AltSEO_AI_Plus_Admin {
 		add_action( 'admin_init', array( $this, 'add_security_headers' ) );
 		add_action( 'admin_menu', array( $this, 'plugin_settings_page' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-		add_action( 'wp_ajax_ajax_bulk_generate_keyword', array( $this, 'ajax_bulk_generate_keyword' ) );
-		add_action( 'wp_ajax_ajax_bulk_generate_alt', array( $this, 'ajax_bulk_generate_alt' ) );
 		add_action( 'wp_ajax_altseo_refresh_models', array( $this, 'ajax_refresh_models' ) );
 		add_action( 'wp_ajax_altseo_save_settings', array( $this, 'ajax_save_settings' ) );
-		add_action( 'wp_ajax_altseo_stop_bulk_generation', array( $this, 'ajax_stop_bulk_generation' ) );
 		add_action( 'wp_ajax_altseo_refresh_vision_models', array( $this, 'ajax_refresh_vision_models' ) );
-		add_action( 'wp_ajax_altseo_cleanup_bulk_states', array( $this, 'ajax_cleanup_bulk_states' ) );
-		add_action( 'wp_ajax_altseo_get_bulk_status', array( $this, 'ajax_get_bulk_status' ) );
 		add_action( 'wp_ajax_altseo_get_image_alt', array( $this, 'ajax_get_image_alt' ) );
 		add_action( 'wp_ajax_nopriv_altseo_get_image_alt', array( $this, 'ajax_get_image_alt' ) );
 	}
@@ -96,7 +91,6 @@ class AltSEO_AI_Plus_Admin {
 
 			// Enqueue our compiled Vue app - load in footer after Vue.
 			wp_enqueue_style( 'altseo-vue-styles', plugin_dir_url( __FILE__ ) . 'assets/dist/bundle.css', array(), filemtime( plugin_dir_path( __FILE__ ) . 'assets/dist/bundle.css' ) );
-			wp_enqueue_style( 'altseo-bulk-tools-styles', plugin_dir_url( __FILE__ ) . 'assets/css/altseo-bulk-tools.css', array(), filemtime( plugin_dir_path( __FILE__ ) . 'assets/css/altseo-bulk-tools.css' ) );
 			wp_enqueue_script( 'altseo-vue-app', plugin_dir_url( __FILE__ ) . 'assets/dist/bundle.js', array( 'vue-js' ), filemtime( plugin_dir_path( __FILE__ ) . 'assets/dist/bundle.js' ), true );
 
 			// Add fallback detection script - load in footer.
@@ -112,10 +106,8 @@ class AltSEO_AI_Plus_Admin {
 					'selectedModel'       => esc_html( get_option( 'altseo_ai_model', 'gpt-3.5-turbo' ) ),
 					'visionModels'        => array_map( 'esc_html', get_option( 'altseo_available_vision_models', array( 'gpt-4o-mini' ) ) ),
 					'selectedVisionModel' => esc_html( get_option( 'altseo_vision_ai_model', 'gpt-4o-mini' ) ),
-					'globalKeywords'      => esc_html( get_option( 'altseo_global_keywords' ) ),
 					'enabled'             => get_option( 'altseo_enabled' ) === '1' || get_option( 'altseo_enabled' ) === 1 || get_option( 'altseo_enabled' ) === true,
 					'keywordNum'          => intval( get_option( 'altseo_keyword_num', 1 ) ),
-					'seoKeywordsCount'    => intval( get_option( 'altseo_seo_keywords_count', 1 ) ),
 					'ajaxUrl'             => esc_url( admin_url( 'admin-ajax.php' ) ),
 					'nonce'               => wp_create_nonce( 'altseo_admin_nonce' ),
 					'refreshModelsNonce'  => wp_create_nonce( 'altseo_admin_nonce' ),
@@ -131,9 +123,8 @@ class AltSEO_AI_Plus_Admin {
 		wp_enqueue_style( 'altseo_ai_alt_style', plugin_dir_url( __FILE__ ) . 'assets/css/altseo-ai-tag-style.css', array(), '1.0.0' );
 		wp_enqueue_script( 'altseo_ai_alt_js', plugin_dir_url( __FILE__ ) . 'assets/js/altseo-ai-tag-js.js', array(), '1.0.0', true );
 
-		// Load the bulk generation stop functionality and model refresh for legacy form.
+		// Load the model refresh for legacy form.
 		if ( $altseo_ai_plus_custom_menu === $hook ) {
-			wp_enqueue_script( 'altseo-bulk-stop', plugin_dir_url( __FILE__ ) . 'assets/js/bulk-generation-stop.js', array( 'altseo-vue-app' ), filemtime( plugin_dir_path( __FILE__ ) . 'assets/js/bulk-generation-stop.js' ), true );
 			wp_enqueue_script( 'altseo_model_refresh_js', plugin_dir_url( __FILE__ ) . 'assets/js/model-refresh.js', array( 'jquery' ), '1.0.0', true );
 			wp_localize_script(
 				'altseo_model_refresh_js',
@@ -256,20 +247,12 @@ class AltSEO_AI_Plus_Admin {
 			}
 
 			// Sanitize and validate all inputs.
-			update_option( 'altseo_global_keywords', sanitize_text_field( wp_unslash( $_POST['altseo_global_keywords'] ) ) );
 			update_option( 'altseo_ai_key', sanitize_text_field( wp_unslash( $_POST['altseo_ai_key'] ) ) );
 
 			if ( isset( $_POST['altseo_keyword_num'] ) ) {
 				$keyword_num = intval( $_POST['altseo_keyword_num'] );
 				if ( $keyword_num >= 1 && $keyword_num <= 10 ) {
 					update_option( 'altseo_keyword_num', $keyword_num );
-				}
-			}
-
-			if ( isset( $_POST['altseo_seo_keywords_count'] ) ) {
-				$seo_keywords_count = intval( $_POST['altseo_seo_keywords_count'] );
-				if ( $seo_keywords_count >= 1 && $seo_keywords_count <= 10 ) {
-					update_option( 'altseo_seo_keywords_count', $seo_keywords_count );
 				}
 			}
 			if ( isset( $_POST['altseo_ai_model'] ) ) {
@@ -295,7 +278,6 @@ class AltSEO_AI_Plus_Admin {
 		}
 
 			$altseo_ai_key          = esc_html( get_option( 'altseo_ai_key' ) );
-			$altseo_global_keywords = esc_html( get_option( 'altseo_global_keywords' ) );
 			$altseo_enabled         = get_option( 'altseo_enabled' ) === '1' || get_option( 'altseo_enabled' ) === 1 || get_option( 'altseo_enabled' ) === true;
 			$altseo_keyword_num     = intval( get_option( 'altseo_keyword_num', 1 ) );
 			$altseo_api             = new AltSEO_AI_Plus_API();
@@ -351,29 +333,6 @@ class AltSEO_AI_Plus_Admin {
 						</tr>
 						<tr>
 							<th>
-								<label>SEO Keywords:</label>
-								<span class="field-description">Default keywords to use when specific post keywords are not available</span>
-							</th>
-							<td><input type="text" size="50" name="altseo_global_keywords" id="altseo_global_keywords" value="<?php echo esc_html( $altseo_global_keywords ); ?>" />  </td>
-						</tr>
-						<tr>
-							<th>
-								<label>SEO Keywords for Alt Tags:</label>
-								<span class="field-description">How many random SEO keywords to include in generated alt tags</span>
-							</th>
-							<td>
-								<select name="altseo_seo_keywords_count" style="width:100px" id="altseo_seo_keywords_count">
-									<?php
-									$seo_keywords_count = get_option( 'altseo_seo_keywords_count', 1 );
-									for ( $i = 1; $i <= 10; $i++ ) :
-										?>
-										<option value="<?php echo esc_attr( $i ); ?>" <?php selected( $seo_keywords_count, $i ); ?>><?php echo esc_html( $i ); ?></option>
-									<?php endfor; ?>
-								</select>
-							</td>
-						</tr>
-						<tr>
-							<th>
 								<label>Auto Generate on Save:</label>
 								<span class="field-description">Automatically generate keywords and alt tags when posts are saved or updated</span>
 							</th>
@@ -404,31 +363,6 @@ class AltSEO_AI_Plus_Admin {
 								</select>
 							</td>
 						</tr>
-							<tr>
-								<th>
-									<label>Generate Keywords:</label>
-									<span class="field-description">Process all existing posts to generate keywords in bulk</span>
-								</th>
-								<td>
-									<button id="generate_keyword_btn" type="button" class="button-secondary">Generate Keywords For All Posts Now</button>
-									<div class="progress_section">
-										<div class="progress_bar"></div>
-										<div class="progress_report">0% complete ....</div>
-									</div>
-								</td>
-							</tr>                            <tr>
-								<th>
-									<label>Generate Alt Tags:</label>
-									<span class="field-description">Process all existing posts to generate alt tags for images in bulk</span>
-								</th>
-								<td>
-									<button id="generate_alt_btn" type="button" class="button-secondary">Generate Alt Tags For All Posts Now</button>
-									<div class="progress_section2">
-										<div class="progress_bar2"></div>
-										<div class="progress_report2">0% complete ....</div>
-									</div>
-								</td>
-							</tr>
 						</tbody>
 					</table>
 				</div>
@@ -439,331 +373,6 @@ class AltSEO_AI_Plus_Admin {
 			</form>
 		</div>
 		<?php
-	}
-
-	/**
-	 * AJAX handler for bulk keyword generation.
-	 *
-	 * @since 1.0.0
-	 */
-	public function ajax_bulk_generate_keyword() {
-		// Check nonce for security.
-		if ( ! check_ajax_referer( 'altseo_admin_nonce', 'nonce', false ) ) {
-			wp_send_json_error( 'Invalid nonce' );
-			wp_die();
-		}
-
-		// Check user capabilities.
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( 'Insufficient permissions' );
-			wp_die();
-		}
-
-		// Increase script timeout for bulk operations.
-		if ( ! ini_get( 'safe_mode' ) ) {
-			set_time_limit( 300 ); // 5 minutes.
-		}
-
-		// Check if process has been stopped before doing anything.
-		if ( get_option( 'altseo_bulk_keyword_stopped' ) ) {
-			delete_option( 'altseo_bulk_keyword_stopped' );
-			delete_option( 'altseo_bulk_keyword_post_list' );
-			delete_option( 'altseo_bulk_keyword_post_list_total' );
-			delete_option( 'altseo_bulk_keyword_lock' ); // Clear lock.
-			wp_send_json_success(
-				array(
-					'percentage' => -1,
-					'message'    => 'Process was stopped',
-				)
-			);
-			wp_die();
-		}
-
-		// Check for existing lock to prevent concurrent processing.
-		$lock_time = get_option( 'altseo_bulk_keyword_lock' );
-		if ( $lock_time && ( time() - $lock_time ) < 120 ) { // 2 minute lock timeout.
-			wp_send_json_error(
-				array(
-					'percentage' => 0,
-					'message'    => 'Another process is already running',
-				)
-			);
-			wp_die();
-		}
-
-		// Set lock.
-		update_option( 'altseo_bulk_keyword_lock', time() );
-
-		try {
-			if ( ! get_option( 'altseo_bulk_keyword_post_list' ) ) {
-				$all_post_ids = get_posts(
-					array(
-						'fields'         => 'ids', // Only get post IDs.
-						'posts_per_page' => -1,
-						'post_type'      => apply_filters( 'altseo_ai_plus_post_types', array( 'post', 'page' ) ),
-						'orderby'        => 'ID',
-						'order'          => 'ASC', // Process in consistent order.
-						'post_status'    => 'publish',
-					)
-				);
-
-				// Log all posts that will be processed.
-				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-					error_log( 'AltSEO AI+: Keyword generation will process ' . count( $all_post_ids ) . ' posts: ' . implode( ', ', $all_post_ids ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-				}
-
-				update_option( 'altseo_bulk_keyword_post_list', $all_post_ids );
-				update_option( 'altseo_bulk_keyword_post_list_total', count( $all_post_ids ) );
-			}
-
-			// Check again if process has been stopped during initialization.
-			if ( get_option( 'altseo_bulk_keyword_stopped' ) ) {
-				delete_option( 'altseo_bulk_keyword_stopped' );
-				delete_option( 'altseo_bulk_keyword_post_list' );
-				delete_option( 'altseo_bulk_keyword_post_list_total' );
-				delete_option( 'altseo_bulk_keyword_lock' ); // Clear lock.
-				wp_send_json_success(
-					array(
-						'percentage' => -1,
-						'message'    => 'Process was stopped',
-					)
-				);
-				wp_die();
-			}
-
-			$post_ids    = get_option( 'altseo_bulk_keyword_post_list' );
-			$total_posts = get_option( 'altseo_bulk_keyword_post_list_total' );
-
-			if ( empty( $post_ids ) || ! is_array( $post_ids ) ) {
-				// No more posts to process or invalid data.
-				delete_option( 'altseo_bulk_keyword_post_list' );
-				delete_option( 'altseo_bulk_keyword_post_list_total' );
-				delete_option( 'altseo_bulk_keyword_lock' ); // Clear lock.
-				wp_send_json_success(
-					array(
-						'percentage' => 100,
-						'message'    => 'Processing complete',
-					)
-				);
-				wp_die();
-			}
-
-			$current_post_id = array_shift( $post_ids );
-			$remaining_posts = count( $post_ids );
-			$processed_posts = $total_posts - $remaining_posts - 1; // -1 for the current post being processed.
-			$percentage      = floor( ( $processed_posts / $total_posts ) * 100 );
-
-			// Log progress details.
-			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				error_log( "AltSEO AI+: Keyword generation progress - Processing post $current_post_id ($processed_posts/$total_posts = $percentage%). Remaining: " . implode( ', ', array_slice( $post_ids, 0, 5 ) ) . ( $remaining_posts > 5 ? '...' : '' ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-			}
-
-			update_option( 'altseo_bulk_keyword_post_list', $post_ids );
-			$altseo_api = new AltSEO_AI_Plus_API();
-			$altseo_api->update_keywords( $current_post_id, true ); // Force update for bulk generation.
-
-			// Clear lock before responding.
-			delete_option( 'altseo_bulk_keyword_lock' );
-
-			// Check if we're done.
-			if ( ! count( $post_ids ) ) {
-				delete_option( 'altseo_bulk_keyword_post_list' );
-				delete_option( 'altseo_bulk_keyword_post_list_total' );
-				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-					error_log( 'AltSEO AI+: Keyword generation completed successfully for all posts' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-				}
-				wp_send_json_success(
-					array(
-						'percentage' => 100,
-						'message'    => 'All posts processed successfully',
-					)
-				);
-			} else {
-				wp_send_json_success(
-					array(
-						'percentage' => $percentage,
-						'message'    => "Processing post $current_post_id... ($processed_posts of $total_posts)",
-					)
-				);
-			}
-		} catch ( Exception $e ) {
-			// Clear lock on error.
-			delete_option( 'altseo_bulk_keyword_lock' );
-			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				error_log( 'AltSEO AI+: Bulk keyword generation error: ' . $e->getMessage() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-			}
-			wp_send_json_error(
-				array(
-					'message' => 'Error processing: ' . $e->getMessage(),
-				)
-			);
-		}
-
-		wp_die(); // this is required to terminate immediately and return a proper response.
-	}
-
-	/**
-	 * AJAX handler for bulk alt text generation
-	 *
-	 * @since 1.0.0
-	 */
-	public function ajax_bulk_generate_alt() {
-		// Check nonce for security.
-		if ( ! check_ajax_referer( 'altseo_admin_nonce', 'nonce', false ) ) {
-			wp_send_json_error( 'Invalid nonce' );
-			wp_die();
-		}
-
-		// Check user capabilities.
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( 'Insufficient permissions' );
-			wp_die();
-		}
-
-		// Increase script timeout for bulk operations.
-		if ( ! ini_get( 'safe_mode' ) ) {
-			set_time_limit( 300 ); // 5 minutes.
-		}
-
-		// Check if process has been stopped before doing anything.
-		if ( get_option( 'altseo_bulk_alt_stopped' ) ) {
-			delete_option( 'altseo_bulk_alt_stopped' );
-			delete_option( 'altseo_bulk_alt_post_list' );
-			delete_option( 'altseo_bulk_alt_post_list_total' );
-			delete_option( 'altseo_bulk_alt_lock' ); // Clear lock.
-			wp_send_json_success(
-				array(
-					'percentage' => -1,
-					'message'    => 'Process was stopped',
-				)
-			);
-			wp_die();
-		}
-
-		// Check for existing lock to prevent concurrent processing.
-		$lock_time = get_option( 'altseo_bulk_alt_lock' );
-		if ( $lock_time && ( time() - $lock_time ) < 120 ) { // 2 minute lock timeout.
-			wp_send_json_error(
-				array(
-					'percentage' => 0,
-					'message'    => 'Another process is already running',
-				)
-			);
-			wp_die();
-		}
-
-		// Set lock.
-		update_option( 'altseo_bulk_alt_lock', time() );
-
-		try {
-			if ( ! get_option( 'altseo_bulk_alt_post_list' ) ) {
-				$all_post_ids = get_posts(
-					array(
-						'fields'         => 'ids', // Only get post ID.
-						'posts_per_page' => -1,
-						'post_type'      => apply_filters( 'altseo_ai_plus_post_types', array( 'post', 'page' ) ),
-						'orderby'        => 'ID',
-						'order'          => 'ASC', // Process in consistent order.
-						'post_status'    => 'publish',
-					)
-				);
-
-				// Log all posts that will be processed.
-				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-					error_log( 'AltSEO AI+: Alt generation will process ' . count( $all_post_ids ) . ' posts: ' . implode( ', ', $all_post_ids ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-				}
-
-				update_option( 'altseo_bulk_alt_post_list', $all_post_ids );
-				update_option( 'altseo_bulk_alt_post_list_total', count( $all_post_ids ) );
-			}
-
-			// Check again if process has been stopped during initialization.
-			if ( get_option( 'altseo_bulk_alt_stopped' ) ) {
-				delete_option( 'altseo_bulk_alt_stopped' );
-				delete_option( 'altseo_bulk_alt_post_list' );
-				delete_option( 'altseo_bulk_alt_post_list_total' );
-				delete_option( 'altseo_bulk_alt_lock' ); // Clear lock.
-				wp_send_json_success(
-					array(
-						'percentage' => -1,
-						'message'    => 'Process was stopped',
-					)
-				);
-				wp_die();
-			}
-
-			$post_ids    = get_option( 'altseo_bulk_alt_post_list' );
-			$total_posts = get_option( 'altseo_bulk_alt_post_list_total' );
-
-			if ( empty( $post_ids ) || ! is_array( $post_ids ) ) {
-				// No more posts to process or invalid data.
-				delete_option( 'altseo_bulk_alt_post_list' );
-				delete_option( 'altseo_bulk_alt_post_list_total' );
-				delete_option( 'altseo_bulk_alt_lock' ); // Clear lock.
-				wp_send_json_success(
-					array(
-						'percentage' => 100,
-						'message'    => 'Processing complete',
-					)
-				);
-				wp_die();
-			}
-
-			$current_post_id = array_shift( $post_ids );
-			$remaining_posts = count( $post_ids );
-			$processed_posts = $total_posts - $remaining_posts - 1; // -1 for the current post being processed.
-			$percentage      = floor( ( $processed_posts / $total_posts ) * 100 );
-
-			// Log progress details.
-			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				error_log( "AltSEO AI+: Alt generation progress - Processing post $current_post_id ($processed_posts/$total_posts = $percentage%). Remaining: " . implode( ', ', array_slice( $post_ids, 0, 5 ) ) . ( $remaining_posts > 5 ? '...' : '' ) ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-			}
-
-			// Update the list atomically.
-			update_option( 'altseo_bulk_alt_post_list', $post_ids );
-
-			// Process the current post.
-			$altseo_api = new AltSEO_AI_Plus_API();
-			$altseo_api->generate_alt( $current_post_id );
-
-			// Clear lock before responding.
-			delete_option( 'altseo_bulk_alt_lock' );
-
-			// Check if we're done.
-			if ( ! count( $post_ids ) ) { // 100% done.
-				delete_option( 'altseo_bulk_alt_post_list' );
-				delete_option( 'altseo_bulk_alt_post_list_total' );
-				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-					error_log( 'AltSEO AI+: Alt generation completed successfully for all posts' ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-				}
-				wp_send_json_success(
-					array(
-						'percentage' => 100,
-						'message'    => 'All posts processed successfully',
-					)
-				);
-			} else {
-				wp_send_json_success(
-					array(
-						'percentage' => $percentage,
-						'message'    => "Processing post $current_post_id... ($processed_posts of $total_posts)",
-					)
-				);
-			}
-		} catch ( Exception $e ) {
-			// Clear lock on error.
-			delete_option( 'altseo_bulk_alt_lock' );
-			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				error_log( 'AltSEO AI+: Bulk alt generation error: ' . $e->getMessage() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-			}
-			wp_send_json_error(
-				array(
-					'message' => 'Error processing: ' . $e->getMessage(),
-				)
-			);
-		}
-
-		wp_die(); // this is required to terminate immediately and return a proper response.
 	}
 
 	/**
@@ -918,14 +527,6 @@ class AltSEO_AI_Plus_Admin {
 				}
 			}
 
-			if ( isset( $_POST['altseo_global_keywords'] ) ) {
-				$keywords = sanitize_text_field( wp_unslash( $_POST['altseo_global_keywords'] ) );
-				// Limit keywords to reasonable length.
-				if ( strlen( $keywords ) <= 500 ) {
-					update_option( 'altseo_global_keywords', $keywords );
-				}
-			}
-
 			if ( isset( $_POST['altseo_enabled'] ) ) {
 				$enabled_value = ( 'yes' === $_POST['altseo_enabled'] || true === $_POST['altseo_enabled'] || '1' === $_POST['altseo_enabled'] || 1 === $_POST['altseo_enabled'] ) ? '1' : '0';
 				update_option( 'altseo_enabled', $enabled_value );
@@ -940,16 +541,6 @@ class AltSEO_AI_Plus_Admin {
 					update_option( 'altseo_keyword_num', $keyword_num );
 				} else {
 					update_option( 'altseo_keyword_num', 1 ); // Default to 1 if out of range.
-				}
-			}
-
-			if ( isset( $_POST['altseo_seo_keywords_count'] ) ) {
-				$seo_keywords_count = intval( $_POST['altseo_seo_keywords_count'] );
-				// Ensure valid range (1-10).
-				if ( $seo_keywords_count >= 1 && $seo_keywords_count <= 10 ) {
-					update_option( 'altseo_seo_keywords_count', $seo_keywords_count );
-				} else {
-					update_option( 'altseo_seo_keywords_count', 1 ); // Default to 1 if out of range.
 				}
 			}
 
