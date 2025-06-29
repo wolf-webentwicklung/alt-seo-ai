@@ -97,14 +97,25 @@ class AltSEO_AI_Admin {
 			wp_enqueue_script( 'altseo-fallback-detector', plugin_dir_url( __FILE__ ) . 'assets/js/fallback-detector.js', array(), '1.0.1', true );
 
 			// Pass data to the Vue app.
+			// Ensure models are always arrays before applying array_map
+			$available_models = get_option( 'altseo_available_models', array( 'gpt-3.5-turbo' ) );
+			if ( ! is_array( $available_models ) ) {
+				$available_models = array( $available_models );
+			}
+			
+			$available_vision_models = get_option( 'altseo_available_vision_models', array( 'gpt-4o-mini' ) );
+			if ( ! is_array( $available_vision_models ) ) {
+				$available_vision_models = array( $available_vision_models );
+			}
+
 			wp_localize_script(
 				'altseo-vue-app',
 				'altSeoData',
 				array(
 					'apiKey'              => wp_kses_post( get_option( 'altseo_ai_key' ) ),
-					'models'              => array_map( 'esc_html', get_option( 'altseo_available_models', array( 'gpt-3.5-turbo' ) ) ),
+					'models'              => array_map( 'esc_html', $available_models ),
 					'selectedModel'       => esc_html( get_option( 'altseo_ai_model', 'gpt-3.5-turbo' ) ),
-					'visionModels'        => array_map( 'esc_html', get_option( 'altseo_available_vision_models', array( 'gpt-4o-mini' ) ) ),
+					'visionModels'        => array_map( 'esc_html', $available_vision_models ),
 					'selectedVisionModel' => esc_html( get_option( 'altseo_vision_ai_model', 'gpt-4o-mini' ) ),
 					'enabled'             => get_option( 'altseo_enabled' ) === '1' || get_option( 'altseo_enabled' ) === 1 || get_option( 'altseo_enabled' ) === true,
 					'keywordNum'          => intval( get_option( 'altseo_keyword_num', 1 ) ),
@@ -183,7 +194,7 @@ class AltSEO_AI_Admin {
 		
 		<?php
 			$msg = '';
-		if ( isset( $_POST['altseo_global_keywords'] ) || isset( $_POST['altseo_ai_key'] ) ) {
+		if ( isset( $_POST['altseo_global_keywords'] ) || isset( $_POST['altseo_ai_key'] ) || isset( $_POST['submit'] ) ) {
 			$msg = '<span style="font-weight:bold;margin-left:20px;"> &#10004; ' . esc_html__( 'Saved Successfully!', 'altseo-ai' ) . '</span>';
 	
 			// Verify nonce.
@@ -239,6 +250,15 @@ class AltSEO_AI_Admin {
 		$altseo_vision_ai_model = get_option( 'altseo_vision_ai_model', 'gpt-4o-mini' );
 		$available_models       = get_option( 'altseo_available_models', array( 'gpt-3.5-turbo' ) );
 		$available_vision_models = get_option( 'altseo_available_vision_models', array( 'gpt-4o-mini' ) );
+		
+		// Ensure models are always arrays
+		if ( ! is_array( $available_models ) ) {
+			$available_models = array( $available_models );
+		}
+		
+		if ( ! is_array( $available_vision_models ) ) {
+			$available_vision_models = array( $available_vision_models );
+		}
 		?>
 
 		<form method="post" action="" class="altseo-settings-form">
@@ -423,7 +443,7 @@ class AltSEO_AI_Admin {
 		}
 
 		$altseo_api = new AltSEO_AI_API();
-		$models     = $altseo_api->get_vision_model();
+		$models     = $altseo_api->fetch_available_vision_models();
 
 		if ( ! empty( $models ) ) {
 			update_option( 'altseo_available_vision_models', $models );
@@ -467,11 +487,15 @@ class AltSEO_AI_Admin {
 				update_option( 'altseo_global_keywords', $global_keywords );
 			}
 
-			// Handle enabled option.
-			if ( isset( $_POST['altseo_enabled'] ) ) {
-				$enabled = sanitize_text_field( wp_unslash( $_POST['altseo_enabled'] ) ) === 'true' ? 1 : 0;
-				update_option( 'altseo_enabled', $enabled );
-			}
+			// Handle enabled option - always process this field
+			// Vue.js sends 'yes' when checked, empty string when unchecked
+			$enabled_value = isset( $_POST['altseo_enabled'] ) ? sanitize_text_field( wp_unslash( $_POST['altseo_enabled'] ) ) : '';
+			$enabled = ( $enabled_value === 'true' || $enabled_value === 'yes' || $enabled_value === '1' ) ? 1 : 0;
+			
+			// Debug log (remove after testing)
+			error_log( 'AltSEO Debug - altseo_enabled value received: ' . var_export( $enabled_value, true ) . ', setting to: ' . $enabled );
+			
+			update_option( 'altseo_enabled', $enabled );
 
 			// Handle keyword number.
 			if ( isset( $_POST['altseo_keyword_num'] ) ) {

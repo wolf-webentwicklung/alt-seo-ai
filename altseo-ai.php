@@ -144,6 +144,9 @@ function altseo_ai_init() {
 		return;
 	}
 
+	// Migrate options to ensure arrays are properly stored
+	altseo_ai_migrate_options();
+
 	// Initialize admin interface.
 	if ( is_admin() ) {
 		new AltSEO_AI_Admin();
@@ -155,6 +158,24 @@ function altseo_ai_init() {
 
 	// Load plugin text domain for internationalization.
 	load_plugin_textdomain( 'altseo-ai', false, plugin_basename( dirname( __FILE__ ) ) . '/languages' );
+}
+
+/**
+ * Migrate string options to array format if needed
+ * This fixes any existing installations where options might be stored as strings
+ */
+function altseo_ai_migrate_options() {
+	// Migrate available_models option
+	$available_models = get_option( 'altseo_available_models' );
+	if ( ! is_array( $available_models ) && ! empty( $available_models ) ) {
+		update_option( 'altseo_available_models', array( $available_models ) );
+	}
+
+	// Migrate available_vision_models option
+	$available_vision_models = get_option( 'altseo_available_vision_models' );
+	if ( ! is_array( $available_vision_models ) && ! empty( $available_vision_models ) ) {
+		update_option( 'altseo_available_vision_models', array( $available_vision_models ) );
+	}
 }
 
 // Plugin lifecycle hooks.
