@@ -5,7 +5,7 @@
  * @link       https://www.wolfwebentwicklung.de
  * @since      1.0.1
  *
- * @package    AltSEO_AI_Plus
+ * @package    AltSEO_AI
  */
 
 // If uninstall not called from WordPress, then exit.
@@ -16,7 +16,7 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 /**
  * Remove all plugin options and transients
  */
-function altseo_ai_plus_uninstall() {
+function altseo_ai_uninstall() {
 	// Plugin options.
 	delete_option( 'altseo_ai_key' );
 	delete_option( 'altseo_global_keywords' );
@@ -37,4 +37,4 @@ function altseo_ai_plus_uninstall() {
 	// as this contains SEO data that should be preserved even if the plugin is removed.
 }
 
-altseo_ai_plus_uninstall();
+altseo_ai_uninstall();
