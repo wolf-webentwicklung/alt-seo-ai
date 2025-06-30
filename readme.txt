@@ -1,5 +1,5 @@
 === AltSEO AI ===
-Contributors: wolfwebentwicklung, samybaxy
+Contributors: wolfwebentwicklung,samybaxy
 Donate link: https://www.wolfwebentwicklung.de/donate/
 Tags: seo, alt text, images, ai, openai, gpt
 Requires at least: 5.2
