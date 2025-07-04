@@ -1,5 +1,5 @@
 === AltSEO AI ===
-Contributors: wolfwebentwicklung
+Contributors: wolfwebentwicklung,samybaxy
 Donate link: https://www.wolfwebentwicklung.de/donate/
 Tags: seo, alt text, images, ai, openai
 Requires at least: 5.2
@@ -13,7 +13,7 @@ Automatically generates image alt text with custom keywords using OpenAI's advan
 
 == Description ==
 
-AltSEO AI is a powerful WordPress plugin that leverages OpenAI's advanced AI models to automatically generate optimized alt text for your images based on custom keywords.
+AltSEO AI is a powerful WordPress plugin that leverages OpenAI's advanced AI models to automatically generate keywords and optimized alt text for your images based on custom keywords.
 
 **Basic Version Features:**
 
