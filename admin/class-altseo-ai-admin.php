@@ -86,8 +86,8 @@ class AltSEO_AI_Admin {
 		}
 		// Load Vue.js app only on the plugin's settings page.
 		if ( $altseo_ai_custom_menu === $hook ) {
-			// Enqueue Vue.js from CDN for production - load in head to prevent FOUC.
-			wp_enqueue_script( 'vue-js', 'https://unpkg.com/vue@3/dist/vue.global.prod.js', array(), '3.3.4', false );
+			// Enqueue local Vue.js library.
+			wp_enqueue_script( 'vue-js', plugin_dir_url( __FILE__ ) . 'assets/js/vendor/vue.global.prod.js', array(), '3.5.17', false );
 
 			// Enqueue our compiled Vue app - load in footer after Vue.
 			wp_enqueue_style( 'altseo-vue-styles', plugin_dir_url( __FILE__ ) . 'assets/dist/bundle.css', array(), filemtime( plugin_dir_path( __FILE__ ) . 'assets/dist/bundle.css' ) );
