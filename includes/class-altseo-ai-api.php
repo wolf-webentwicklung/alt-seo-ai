@@ -1885,140 +1885,138 @@ class AltSEO_AI_API {
 
 		// Create the file if it doesn't exist.
 		if ( ! file_exists( $js_file_path ) ) {
-			$js_content = <<<'EOT'
-/*!
- * AltSEO AI+ Elementor Compatibility Script
- * Fixes dynamic alt text attributes in Elementor
- */
-
-(function() {
-    'use strict';
-
-    // Function to fix dynamic alt attributes.
-    function fixElementorDynamicAlts() {
-        // Find all images with empty alt attributes.
-        var images = document.querySelectorAll('img[alt=""]');
-        
-        images.forEach(function(img) {
-            // Try to get ID from classes.
-            var classes = img.className.split(' ');
-            var imageId = null;
-            
-            // Look for wp-image-{ID} class.
-            classes.forEach(function(cls) {
-                if (cls.indexOf('wp-image-') === 0) {
-                    imageId = cls.replace('wp-image-', '');
-                }
-            });
-            
-            // Look for data-id attribute.
-            if (!imageId && img.dataset && img.dataset.id) {
-                imageId = img.dataset.id;
-            }
-            
-            // Look for special elementor attributes.
-            if (!imageId && img.dataset && img.dataset.settings) {
-                try {
-                    var settings = JSON.parse(img.dataset.settings);
-                    if (settings.image && settings.image.id) {
-                        imageId = settings.image.id;
-                    }
-                } catch(e) {
-                    console.error('Error parsing Elementor image settings:', e);
-                }
-            }
-            
-            // Try to extract ID from the source URL.
-            if (!imageId && img.src) {
-                // Check if URL contains -\\d+ before file extension.
-                var match = img.src.match(/-(\d+)\.(jpe?g|png|gif|svg|webp)/i);
-                if (match && match[1]) {
-                    // This might be the attachment ID in the filename.
-                    imageId = match[1];
-                }
-            }
-            
-            if (imageId) {
-                // Store the image element reference for access in the XHR callback.
-                var imgElement = img;
-                
-                // Make AJAX call to get the alt text.
-                var xhr = new XMLHttpRequest();
-                xhr.open('POST', altSeoElementorData.ajaxUrl, true);
-                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-                xhr.onreadystatechange = function() {
-                    if (xhr.readyState === 4) {
-                        if (xhr.status === 200) {
-                            try {
-                                var response = JSON.parse(xhr.responseText);
-                                if (response.success && response.data) {
-                                    // Set the alt attribute.
-                                    imgElement.alt = response.data;
-                                    // Also update the aria-label if it exists.
-                                    if (imgElement.hasAttribute('aria-label')) {
-                                        imgElement.setAttribute('aria-label', response.data);
-                                    }
-                                }
-                            } catch(e) {
-                                console.error('Error parsing AltSEO response:', e);
-                            }
-                        } else {
-                            console.error('AltSEO request failed with status:', xhr.status);
-                        }
-                    }
-                };
-                xhr.send('action=altseo_get_image_alt&image_id=' + imageId + '&nonce=' + altSeoElementorData.nonce);
-            }
-        });
-    }
-    
-    // Run once on page load.
-    document.addEventListener('DOMContentLoaded', function() {
-        // Wait a bit to ensure Elementor has rendered everything.
-        setTimeout(fixElementorDynamicAlts, 500);
-        
-        // Add mutation observer to handle dynamically added content.
-        var observer = new MutationObserver(function(mutations) {
-            var shouldFix = false;
-            
-            mutations.forEach(function(mutation) {
-                if (mutation.addedNodes && mutation.addedNodes.length > 0) {
-                    // Check if any of the added nodes might contain images.
-                    for (var i = 0; i < mutation.addedNodes.length; i++) {
-                        var node = mutation.addedNodes[i];
-                        if (node.nodeType === 1) { // Element node
-                            if (node.tagName === 'IMG' || node.querySelector('img')) {
-                                shouldFix = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-            });
-            
-            if (shouldFix) {
-                setTimeout(fixElementorDynamicAlts, 500);
-            }
-        });
-        
-        // Start observing the entire document.
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
-        
-        // Also listen for Elementor frontend events if Elementor is available.
-        if (window.elementorFrontend) {
-            // Run after Elementor frontend init.
-            if (elementorFrontend.hooks) {
-                elementorFrontend.hooks.addAction('frontend/element_ready/global', function() {
-                    setTimeout(fixElementorDynamicAlts, 500);
-                });
-            }
-        }
-    });
-})();
-EOT;
+			$js_content = '/*!' . "\n" .
+				' * AltSEO AI+ Elementor Compatibility Script' . "\n" .
+				' * Fixes dynamic alt text attributes in Elementor' . "\n" .
+				' */' . "\n" .
+				"\n" .
+				'(function() {' . "\n" .
+				'    \'use strict\';' . "\n" .
+				"\n" .
+				'    // Function to fix dynamic alt attributes.' . "\n" .
+				'    function fixElementorDynamicAlts() {' . "\n" .
+				'        // Find all images with empty alt attributes.' . "\n" .
+				'        var images = document.querySelectorAll(\'img[alt=""]\');' . "\n" .
+				'        ' . "\n" .
+				'        images.forEach(function(img) {' . "\n" .
+				'            // Try to get ID from classes.' . "\n" .
+				'            var classes = img.className.split(\' \');' . "\n" .
+				'            var imageId = null;' . "\n" .
+				'            ' . "\n" .
+				'            // Look for wp-image-{ID} class.' . "\n" .
+				'            classes.forEach(function(cls) {' . "\n" .
+				'                if (cls.indexOf(\'wp-image-\') === 0) {' . "\n" .
+				'                    imageId = cls.replace(\'wp-image-\', \'\');' . "\n" .
+				'                }' . "\n" .
+				'            });' . "\n" .
+				'            ' . "\n" .
+				'            // Look for data-id attribute.' . "\n" .
+				'            if (!imageId && img.dataset && img.dataset.id) {' . "\n" .
+				'                imageId = img.dataset.id;' . "\n" .
+				'            }' . "\n" .
+				'            ' . "\n" .
+				'            // Look for special elementor attributes.' . "\n" .
+				'            if (!imageId && img.dataset && img.dataset.settings) {' . "\n" .
+				'                try {' . "\n" .
+				'                    var settings = JSON.parse(img.dataset.settings);' . "\n" .
+				'                    if (settings.image && settings.image.id) {' . "\n" .
+				'                        imageId = settings.image.id;' . "\n" .
+				'                    }' . "\n" .
+				'                } catch(e) {' . "\n" .
+				'                    console.error(\'Error parsing Elementor image settings:\', e);' . "\n" .
+				'                }' . "\n" .
+				'            }' . "\n" .
+				'            ' . "\n" .
+				'            // Try to extract ID from the source URL.' . "\n" .
+				'            if (!imageId && img.src) {' . "\n" .
+				'                // Check if URL contains -\\\\d+ before file extension.' . "\n" .
+				'                var match = img.src.match(/-(\\d+)\\.(jpe?g|png|gif|svg|webp)/i);' . "\n" .
+				'                if (match && match[1]) {' . "\n" .
+				'                    // This might be the attachment ID in the filename.' . "\n" .
+				'                    imageId = match[1];' . "\n" .
+				'                }' . "\n" .
+				'            }' . "\n" .
+				'            ' . "\n" .
+				'            if (imageId) {' . "\n" .
+				'                // Store the image element reference for access in the XHR callback.' . "\n" .
+				'                var imgElement = img;' . "\n" .
+				'                ' . "\n" .
+				'                // Make AJAX call to get the alt text.' . "\n" .
+				'                var xhr = new XMLHttpRequest();' . "\n" .
+				'                xhr.open(\'POST\', altSeoElementorData.ajaxUrl, true);' . "\n" .
+				'                xhr.setRequestHeader(\'Content-Type\', \'application/x-www-form-urlencoded\');' . "\n" .
+				'                xhr.onreadystatechange = function() {' . "\n" .
+				'                    if (xhr.readyState === 4) {' . "\n" .
+				'                        if (xhr.status === 200) {' . "\n" .
+				'                            try {' . "\n" .
+				'                                var response = JSON.parse(xhr.responseText);' . "\n" .
+				'                                if (response.success && response.data) {' . "\n" .
+				'                                    // Set the alt attribute.' . "\n" .
+				'                                    imgElement.alt = response.data;' . "\n" .
+				'                                    // Also update the aria-label if it exists.' . "\n" .
+				'                                    if (imgElement.hasAttribute(\'aria-label\')) {' . "\n" .
+				'                                        imgElement.setAttribute(\'aria-label\', response.data);' . "\n" .
+				'                                    }' . "\n" .
+				'                                }' . "\n" .
+				'                            } catch(e) {' . "\n" .
+				'                                console.error(\'Error parsing AltSEO response:\', e);' . "\n" .
+				'                            }' . "\n" .
+				'                        } else {' . "\n" .
+				'                            console.error(\'AltSEO request failed with status:\', xhr.status);' . "\n" .
+				'                        }' . "\n" .
+				'                    }' . "\n" .
+				'                };' . "\n" .
+				'                xhr.send(\'action=altseo_get_image_alt&image_id=\' + imageId + \'&nonce=\' + altSeoElementorData.nonce);' . "\n" .
+				'            }' . "\n" .
+				'        });' . "\n" .
+				'    }' . "\n" .
+				'    ' . "\n" .
+				'    // Run once on page load.' . "\n" .
+				'    document.addEventListener(\'DOMContentLoaded\', function() {' . "\n" .
+				'        // Wait a bit to ensure Elementor has rendered everything.' . "\n" .
+				'        setTimeout(fixElementorDynamicAlts, 500);' . "\n" .
+				'        ' . "\n" .
+				'        // Add mutation observer to handle dynamically added content.' . "\n" .
+				'        var observer = new MutationObserver(function(mutations) {' . "\n" .
+				'            var shouldFix = false;' . "\n" .
+				'            ' . "\n" .
+				'            mutations.forEach(function(mutation) {' . "\n" .
+				'                if (mutation.addedNodes && mutation.addedNodes.length > 0) {' . "\n" .
+				'                    // Check if any of the added nodes might contain images.' . "\n" .
+				'                    for (var i = 0; i < mutation.addedNodes.length; i++) {' . "\n" .
+				'                        var node = mutation.addedNodes[i];' . "\n" .
+				'                        if (node.nodeType === 1) { // Element node' . "\n" .
+				'                            if (node.tagName === \'IMG\' || node.querySelector(\'img\')) {' . "\n" .
+				'                                shouldFix = true;' . "\n" .
+				'                                break;' . "\n" .
+				'                            }' . "\n" .
+				'                        }' . "\n" .
+				'                    }' . "\n" .
+				'                }' . "\n" .
+				'            });' . "\n" .
+				'            ' . "\n" .
+				'            if (shouldFix) {' . "\n" .
+				'                setTimeout(fixElementorDynamicAlts, 500);' . "\n" .
+				'            }' . "\n" .
+				'        });' . "\n" .
+				'        ' . "\n" .
+				'        // Start observing the entire document.' . "\n" .
+				'        observer.observe(document.body, {' . "\n" .
+				'            childList: true,' . "\n" .
+				'            subtree: true' . "\n" .
+				'        });' . "\n" .
+				'        ' . "\n" .
+				'        // Also listen for Elementor frontend events if Elementor is available.' . "\n" .
+				'        if (window.elementorFrontend) {' . "\n" .
+				'            // Run after Elementor frontend init.' . "\n" .
+				'            if (elementorFrontend.hooks) {' . "\n" .
+				'                elementorFrontend.hooks.addAction(\'frontend/element_ready/global\', function() {' . "\n" .
+				'                    setTimeout(fixElementorDynamicAlts, 500);' . "\n" .
+				'                });' . "\n" .
+				'            }' . "\n" .
+				'        }' . "\n" .
+				'    });' . "\n" .
+				'})();';
 
 			// Use WP_Filesystem instead of direct file operation.
 			global $wp_filesystem;
